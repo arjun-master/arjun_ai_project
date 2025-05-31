@@ -1,0 +1,65 @@
+package com.arjunai.project.controllers;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/split")
+@Tag(name = "Bill Splitting", description = "APIs for splitting bills and payments")
+public class PaymentSplitController {
+
+    @Operation(summary = "Split bill equally")
+    @GetMapping("/equal")
+    public ResponseEntity<Double> splitEqually(
+            @Parameter(description = "Total bill amount") @RequestParam double amount,
+            @Parameter(description = "Number of people") @RequestParam int people) {
+        log.debug("Splitting {} equally among {} people", amount, people);
+        if (people <= 0) {
+            throw new IllegalArgumentException("Number of people must be greater than zero");
+        }
+        return ResponseEntity.ok(amount / people);
+    }
+
+    @Operation(summary = "Split bill with tip")
+    @GetMapping("/withTip")
+    public ResponseEntity<Double> splitWithTip(
+            @Parameter(description = "Total bill amount") @RequestParam double amount,
+            @Parameter(description = "Number of people") @RequestParam int people,
+            @Parameter(description = "Tip percentage") @RequestParam double tipPercentage) {
+        log.debug("Splitting {} with {}% tip among {} people", amount, tipPercentage, people);
+        if (people <= 0) {
+            throw new IllegalArgumentException("Number of people must be greater than zero");
+        }
+        double totalAmount = amount * (1 + tipPercentage / 100);
+        return ResponseEntity.ok(totalAmount / people);
+    }
+
+    @Operation(summary = "Split bill by items")
+    @GetMapping("/byItems")
+    public ResponseEntity<Map<String, Double>> splitByItems(
+            @Parameter(description = "Map of items and their prices") @RequestParam Map<String, Double> items,
+            @Parameter(description = "List of participants") @RequestParam List<String> participants) {
+        log.debug("Splitting bill by items: {} among participants: {}", items, participants);
+        if (participants.isEmpty()) {
+            throw new IllegalArgumentException("At least one participant is required");
+        }
+        
+        double totalAmount = items.values().stream().mapToDouble(Double::doubleValue).sum();
+        double amountPerPerson = totalAmount / participants.size();
+        
+        Map<String, Double> shares = new HashMap<>();
+        participants.forEach(participant -> shares.put(participant, amountPerPerson));
+        
+        return ResponseEntity.ok(shares);
+    }
+} 
