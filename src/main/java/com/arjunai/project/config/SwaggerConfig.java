@@ -14,15 +14,8 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Arjun AI Project API")
+                        .title("Math Operations API")
                         .version("1.0.0")
-                        .description("Spring Boot REST API for mathematical operations")
-                        .contact(new Contact()
-                                .name("Arjun Raju")
-                                .email("arjun@example.com")
-                                .url("https://github.com/arjunraju"))
-                        .license(new License()
-                                .name("MIT License")
-                                .url("https://opensource.org/licenses/MIT")));
+                        .description("REST API for mathematical operations"));
     }
 } 

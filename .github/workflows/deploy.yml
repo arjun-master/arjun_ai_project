@@ -1,0 +1,64 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build with Maven
+      run: mvn clean package -DskipTests
+
+    - name: Run Tests
+      run: mvn test
+
+    - name: Login to Docker Hub
+      if: github.ref == 'refs/heads/main'
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    - name: Build and Push Docker image
+      if: github.ref == 'refs/heads/main'
+      run: |
+        docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/arjun-ai-project:${{ github.sha }} .
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/arjun-ai-project:${{ github.sha }}
+        docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/arjun-ai-project:${{ github.sha }} ${{ secrets.DOCKER_HUB_USERNAME }}/arjun-ai-project:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/arjun-ai-project:latest
+
+    - name: Deploy to AWS EC2
+      if: github.ref == 'refs/heads/main'
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.AWS_HOST }}
+        username: ${{ secrets.AWS_USERNAME }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          # Stop existing container
+          docker stop arjun-ai-project || true
+          docker rm arjun-ai-project || true
+          
+          # Pull latest image
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/arjun-ai-project:latest
+          
+          # Run new container
+          docker run -d \
+            --name arjun-ai-project \
+            -p 8080:8080 \
+            --restart unless-stopped \
+            ${{ secrets.DOCKER_HUB_USERNAME }}/arjun-ai-project:latest 

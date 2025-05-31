@@ -171,3 +171,80 @@ Arjun Raju
 ## Support
 
 For support, please open an issue in the GitHub repository or contact the development team.
+
+## CI/CD Setup
+
+This project uses GitHub Actions for CI/CD and deploys to an AWS EC2 Ubuntu instance.
+
+### Prerequisites for CI/CD
+
+1. AWS EC2 Ubuntu instance
+2. Docker Hub account
+3. Domain name (optional, for SSL)
+
+### Required GitHub Secrets
+
+Set up the following secrets in your GitHub repository:
+
+```
+DOCKER_HUB_USERNAME
+DOCKER_HUB_ACCESS_TOKEN
+AWS_HOST
+AWS_USERNAME
+AWS_SSH_KEY
+```
+
+### Setting up the Ubuntu Server
+
+1. SSH into your EC2 instance:
+   ```bash
+   ssh -i your-key.pem ubuntu@your-ec2-ip
+   ```
+
+2. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/arjun-ai-project.git
+   cd arjun-ai-project
+   ```
+
+3. Run the setup script:
+   ```bash
+   chmod +x scripts/setup-ubuntu.sh
+   ./scripts/setup-ubuntu.sh
+   ```
+
+4. Update Nginx configuration:
+   ```bash
+   sudo nano /etc/nginx/sites-available/arjun-ai-project
+   # Update server_name with your domain
+   ```
+
+5. Set up SSL (if using a domain):
+   ```bash
+   sudo certbot --nginx
+   ```
+
+### CI/CD Pipeline
+
+The CI/CD pipeline performs the following steps:
+
+1. Builds the application with Maven
+2. Runs tests
+3. Builds Docker image
+4. Pushes image to Docker Hub
+5. Deploys to AWS EC2
+
+The pipeline runs automatically on:
+- Push to main branch
+- Pull requests to main branch
+
+### Monitoring
+
+The application is monitored using:
+- Cron job checking container status every 5 minutes
+- Automatic container restart on failure
+- Nginx as reverse proxy
+
+### SSL/TLS
+
+SSL certificates are managed by Let's Encrypt and auto-renewed by certbot.
