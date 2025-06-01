@@ -24,7 +24,7 @@ public class ApiLogService {
 
     @CircuitBreaker(name = "apiLogService", fallbackMethod = "fallbackStartLog")
     @Retry(name = "apiLogService")
-    public ApiLog startLog(String methodName, String endpoint, Map<String, Object> request) {
+    public ApiLog startLog(String methodName, String endpoint, Map<?, ?> request) {
         ApiLog apiLog = new ApiLog();
         apiLog.setMethodName(methodName);
         apiLog.setEndpoint(endpoint);
@@ -61,7 +61,7 @@ public class ApiLogService {
     }
 
     // Fallback methods
-    private ApiLog fallbackStartLog(String methodName, String endpoint, Map<String, Object> request, Exception e) {
+    private ApiLog fallbackStartLog(String methodName, String endpoint, Map<?, ?> request, Exception e) {
         log.error("Circuit breaker fallback: Failed to start log", e);
         ApiLog fallbackLog = new ApiLog();
         fallbackLog.setMethodName(methodName);

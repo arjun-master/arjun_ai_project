@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Controller for handling mathematical operations.
@@ -25,118 +26,99 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/api/math")
-@Tag(name = "Math Operations", description = "Basic mathematical operations API")
+@Tag(name = "Math Operations", description = "API endpoints for basic mathematical operations")
 @RequiredArgsConstructor
 public class MathOperationsController {
 
     private final ApiLogService apiLogService;
 
-    /**
-     * Adds two numbers with performance monitoring.
-     *
-     * @param a First number
-     * @param b Second number
-     * @return Sum of the two numbers
-     */
+    @PostMapping("/add")
     @Operation(summary = "Add two numbers")
-    @GetMapping("/add")
-    public ResponseEntity<Double> add(
-            @Parameter(description = "First number") @RequestParam double a,
-            @Parameter(description = "Second number") @RequestParam double b) {
-        Instant startTime = Instant.now();
-        String endpoint = "/api/math/add";
-        Map<String, Double> request = Map.of("a", a, "b", b);
-        ApiLog apiLog = apiLogService.startLog("add", endpoint, request);
-        
+    public Map<String, Object> add(@RequestBody Map<String, Double> request) {
+        var startTime = Instant.now();
+        var apiLog = apiLogService.startLog("add", "/api/math/add", request);
+
         try {
-            Double result = a + b;
-            apiLogService.completeLog(apiLog, result, startTime);
-            return ResponseEntity.ok(result);
+            double num1 = request.get("num1");
+            double num2 = request.get("num2");
+            double result = num1 + num2;
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("result", result);
+
+            apiLogService.completeLog(apiLog, response, startTime);
+            return response;
         } catch (Exception e) {
             apiLogService.logError(apiLog, e, startTime);
             throw e;
         }
     }
 
-    /**
-     * Subtracts two numbers with performance monitoring.
-     *
-     * @param a First number
-     * @param b Second number
-     * @return Difference of the two numbers
-     */
+    @PostMapping("/subtract")
     @Operation(summary = "Subtract two numbers")
-    @GetMapping("/subtract")
-    public ResponseEntity<Double> subtract(
-            @Parameter(description = "First number") @RequestParam double a,
-            @Parameter(description = "Second number") @RequestParam double b) {
-        Instant startTime = Instant.now();
-        String endpoint = "/api/math/subtract";
-        Map<String, Double> request = Map.of("a", a, "b", b);
-        ApiLog apiLog = apiLogService.startLog("subtract", endpoint, request);
-        
+    public Map<String, Object> subtract(@RequestBody Map<String, Double> request) {
+        var startTime = Instant.now();
+        var apiLog = apiLogService.startLog("subtract", "/api/math/subtract", new HashMap<>(request));
+
         try {
-            Double result = a - b;
-            apiLogService.completeLog(apiLog, result, startTime);
-            return ResponseEntity.ok(result);
+            double num1 = request.get("num1");
+            double num2 = request.get("num2");
+            double result = num1 - num2;
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("result", result);
+
+            apiLogService.completeLog(apiLog, response, startTime);
+            return response;
         } catch (Exception e) {
             apiLogService.logError(apiLog, e, startTime);
             throw e;
         }
     }
 
-    /**
-     * Multiplies two numbers with performance monitoring.
-     *
-     * @param a First number
-     * @param b Second number
-     * @return Product of the two numbers
-     */
+    @PostMapping("/multiply")
     @Operation(summary = "Multiply two numbers")
-    @GetMapping("/multiply")
-    public ResponseEntity<Double> multiply(
-            @Parameter(description = "First number") @RequestParam double a,
-            @Parameter(description = "Second number") @RequestParam double b) {
-        Instant startTime = Instant.now();
-        String endpoint = "/api/math/multiply";
-        Map<String, Double> request = Map.of("a", a, "b", b);
-        ApiLog apiLog = apiLogService.startLog("multiply", endpoint, request);
-        
+    public Map<String, Object> multiply(@RequestBody Map<String, Double> request) {
+        var startTime = Instant.now();
+        var apiLog = apiLogService.startLog("multiply", "/api/math/multiply", new HashMap<>(request));
+
         try {
-            Double result = a * b;
-            apiLogService.completeLog(apiLog, result, startTime);
-            return ResponseEntity.ok(result);
+            double num1 = request.get("num1");
+            double num2 = request.get("num2");
+            double result = num1 * num2;
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("result", result);
+
+            apiLogService.completeLog(apiLog, response, startTime);
+            return response;
         } catch (Exception e) {
             apiLogService.logError(apiLog, e, startTime);
             throw e;
         }
     }
 
-    /**
-     * Divides two numbers with performance monitoring.
-     *
-     * @param a Dividend
-     * @param b Divisor
-     * @return Quotient of the division
-     * @throws IllegalArgumentException if divisor is zero
-     */
+    @PostMapping("/divide")
     @Operation(summary = "Divide two numbers")
-    @GetMapping("/divide")
-    public ResponseEntity<Double> divide(
-            @Parameter(description = "Dividend") @RequestParam double a,
-            @Parameter(description = "Divisor") @RequestParam double b) {
-        Instant startTime = Instant.now();
-        String endpoint = "/api/math/divide";
-        Map<String, Double> request = Map.of("a", a, "b", b);
-        ApiLog apiLog = apiLogService.startLog("divide", endpoint, request);
-        
+    public Map<String, Object> divide(@RequestBody Map<String, Double> request) {
+        var startTime = Instant.now();
+        var apiLog = apiLogService.startLog("divide", "/api/math/divide", new HashMap<>(request));
+
         try {
-            if (b == 0) {
+            double num1 = request.get("num1");
+            double num2 = request.get("num2");
+
+            if (num2 == 0) {
                 throw new IllegalArgumentException("Cannot divide by zero");
             }
-            Double result = a / b;
-            apiLogService.completeLog(apiLog, result, startTime);
-            return ResponseEntity.ok(result);
+
+            double result = num1 / num2;
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("result", result);
+
+            apiLogService.completeLog(apiLog, response, startTime);
+            return response;
         } catch (Exception e) {
             apiLogService.logError(apiLog, e, startTime);
             throw e;
