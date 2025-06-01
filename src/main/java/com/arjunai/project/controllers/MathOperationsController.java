@@ -1,28 +1,38 @@
 package com.arjunai.project.controllers;
 
+import com.arjunai.project.models.ApiLog;
+import com.arjunai.project.services.ApiLogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+
+import java.time.Instant;
+import java.util.Map;
 
 /**
  * Controller for handling mathematical operations.
  * Provides REST endpoints for basic arithmetic operations.
  *
  * @author Arjun Raju
- * @version 1.0
+ * @version 1.2
  */
 @Slf4j
 @RestController
 @RequestMapping("/api/math")
 @Tag(name = "Math Operations", description = "Basic mathematical operations API")
+@RequiredArgsConstructor
 public class MathOperationsController {
 
+    private final ApiLogService apiLogService;
+
     /**
-     * Adds two numbers.
+     * Adds two numbers with performance monitoring.
      *
      * @param a First number
      * @param b Second number
@@ -33,12 +43,23 @@ public class MathOperationsController {
     public ResponseEntity<Double> add(
             @Parameter(description = "First number") @RequestParam double a,
             @Parameter(description = "Second number") @RequestParam double b) {
-        log.debug("Adding {} and {}", a, b);
-        return ResponseEntity.ok(a + b);
+        Instant startTime = Instant.now();
+        String endpoint = "/api/math/add";
+        Map<String, Double> request = Map.of("a", a, "b", b);
+        ApiLog apiLog = apiLogService.startLog("add", endpoint, request);
+        
+        try {
+            Double result = a + b;
+            apiLogService.completeLog(apiLog, result, startTime);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            apiLogService.logError(apiLog, e, startTime);
+            throw e;
+        }
     }
 
     /**
-     * Subtracts two numbers.
+     * Subtracts two numbers with performance monitoring.
      *
      * @param a First number
      * @param b Second number
@@ -49,12 +70,23 @@ public class MathOperationsController {
     public ResponseEntity<Double> subtract(
             @Parameter(description = "First number") @RequestParam double a,
             @Parameter(description = "Second number") @RequestParam double b) {
-        log.debug("Subtracting {} from {}", b, a);
-        return ResponseEntity.ok(a - b);
+        Instant startTime = Instant.now();
+        String endpoint = "/api/math/subtract";
+        Map<String, Double> request = Map.of("a", a, "b", b);
+        ApiLog apiLog = apiLogService.startLog("subtract", endpoint, request);
+        
+        try {
+            Double result = a - b;
+            apiLogService.completeLog(apiLog, result, startTime);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            apiLogService.logError(apiLog, e, startTime);
+            throw e;
+        }
     }
 
     /**
-     * Multiplies two numbers.
+     * Multiplies two numbers with performance monitoring.
      *
      * @param a First number
      * @param b Second number
@@ -65,12 +97,23 @@ public class MathOperationsController {
     public ResponseEntity<Double> multiply(
             @Parameter(description = "First number") @RequestParam double a,
             @Parameter(description = "Second number") @RequestParam double b) {
-        log.debug("Multiplying {} and {}", a, b);
-        return ResponseEntity.ok(a * b);
+        Instant startTime = Instant.now();
+        String endpoint = "/api/math/multiply";
+        Map<String, Double> request = Map.of("a", a, "b", b);
+        ApiLog apiLog = apiLogService.startLog("multiply", endpoint, request);
+        
+        try {
+            Double result = a * b;
+            apiLogService.completeLog(apiLog, result, startTime);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            apiLogService.logError(apiLog, e, startTime);
+            throw e;
+        }
     }
 
     /**
-     * Divides two numbers.
+     * Divides two numbers with performance monitoring.
      *
      * @param a Dividend
      * @param b Divisor
@@ -82,10 +125,30 @@ public class MathOperationsController {
     public ResponseEntity<Double> divide(
             @Parameter(description = "Dividend") @RequestParam double a,
             @Parameter(description = "Divisor") @RequestParam double b) {
-        log.debug("Dividing {} by {}", a, b);
-        if (b == 0) {
-            throw new IllegalArgumentException("Cannot divide by zero");
+        Instant startTime = Instant.now();
+        String endpoint = "/api/math/divide";
+        Map<String, Double> request = Map.of("a", a, "b", b);
+        ApiLog apiLog = apiLogService.startLog("divide", endpoint, request);
+        
+        try {
+            if (b == 0) {
+                throw new IllegalArgumentException("Cannot divide by zero");
+            }
+            Double result = a / b;
+            apiLogService.completeLog(apiLog, result, startTime);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            apiLogService.logError(apiLog, e, startTime);
+            throw e;
         }
-        return ResponseEntity.ok(a / b);
+    }
+}
+
+@RestControllerAdvice
+class MathOperationsExceptionHandler {
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
 } 
